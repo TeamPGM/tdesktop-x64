@@ -1521,9 +1521,13 @@ base::unique_qptr<Ui::PopupMenu> FillContextMenu(
 	AddReplyToMessageAction(result, request, list);
 	AddTodoListAction(result, request, list);
 
-	// if (hasWhoReactedItem) {
-	// 	AddWhoReactedAction(result, list, item, list->controller());
-	// }
+	if (hasWhoReactedItem) {
+		AddWhoReactedAction(result, list, item, list->controller());
+	}
+	else if (item) {
+		MaybeAddWhenEditedForwardedAction(result, item, list->controller());
+	}
+
 	if (request.overSelection
 		&& !list->hasCopyRestrictionForSelected()
 		&& !list->getSelectedText().empty()) {
@@ -1622,11 +1626,6 @@ base::unique_qptr<Ui::PopupMenu> FillContextMenu(
 	if (item) {
 		const auto added = (result->actions().size() > wasAmount);
 		AddSelectRestrictionAction(result, item, !added);
-	}
-	if (hasWhoReactedItem) {
-		AddWhoReactedAction(result, list, item, list->controller());
-	} else if (item) {
-		MaybeAddWhenEditedForwardedAction(result, item, list->controller());
 	}
 
 	return result;
@@ -1898,9 +1897,6 @@ void AddWhoReactedAction(
 						whoReadIds)));
 		}
 	};
-	if (!menu->empty()) {
-		menu->addSeparator(&st::expandedMenuSeparator);
-	}
 	if (item->history()->peer->isUser()) {
 		AddWhenEditedForwardedAuthorActionHelper(
 			menu,
